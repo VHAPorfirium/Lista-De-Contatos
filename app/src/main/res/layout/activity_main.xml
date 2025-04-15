@@ -1,19 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/main_coordinator_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <TextView
+    <!-- Container principal com layout vertical para as seções -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Barra de pesquisa no topo -->
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_view_contatos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:iconifiedByDefault="false"
+            android:queryHint="@string/buscar_contatos" />
+
+        <!-- Seção para exibir o contato do dono do celular -->
+        <LinearLayout
+            android:id="@+id/layout_contato_dono"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:padding="0dp"
+            android:gravity="center_vertical"
+            android:background="@android:color/white">
+
+            <!-- Imagem do contato do dono -->
+            <ImageView
+                android:id="@+id/imgContatoDono"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_contact_placeholder"
+                android:contentDescription="@string/foto_do_contato"
+                android:scaleType="centerCrop" />
+
+            <!-- Nome do contato do dono -->
+            <TextView
+                android:id="@+id/txtContatoDono"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Meu Contato"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingStart="16dp" />
+        </LinearLayout>
+
+        <!-- Lista de contatos ocupando o espaço restante -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewContatos"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:scrollbars="vertical" />
+    </LinearLayout>
+
+    <!-- Botão flutuante para adicionar novo contato -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddContato"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:contentDescription="@string/adicionar_contato"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_add_white_24dp"
+        app:tint="@android:color/white" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

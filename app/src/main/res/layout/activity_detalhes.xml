@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_detalhes_contato"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="@dimen/activity_horizontal_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Foto do contato -->
+        <ImageView
+            android:id="@+id/imgFotoContato"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/foto_do_contato"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_contact_placeholder" />
+
+        <!-- Nome do contato -->
+        <TextView
+            android:id="@+id/txtNomeContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/nome_contato_exemplo"
+            android:layout_marginTop="12dp" />
+
+        <!-- Indicação de favorito -->
+        <CheckBox
+            android:id="@+id/chkFavorito"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/favorito"
+            android:layout_marginTop="8dp" />
+
+        <!-- Telefone -->
+        <TextView
+            android:id="@+id/txtTelefoneContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginTop="16dp"
+            android:text="@string/telefone_contato_exemplo" />
+
+        <!-- E-mail -->
+        <TextView
+            android:id="@+id/txtEmailContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_marginTop="8dp"
+            android:text="@string/email_contato_exemplo" />
+
+        <!-- LinkedIn -->
+        <TextView
+            android:id="@+id/txtLinkedinContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/linkedin_contato_exemplo"
+            android:autoLink="web" />
+
+        <!-- Endereço -->
+        <TextView
+            android:id="@+id/txtEnderecoContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/endereco_contato_exemplo" />
+
+        <!-- Seção de botões de ação -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnLigar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ligar" />
+
+            <Button
+                android:id="@+id/btnEnviarEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/enviar_email" />
+
+            <Button
+                android:id="@+id/btnEditarContato"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/editar" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

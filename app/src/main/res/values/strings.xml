@@ -1,3 +1,25 @@
 <resources>
-    <string name="app_name">Lista-De-Contatos</string>
+    <string name="app_name">Lista de Contatos</string>
+    <string name="buscar_contatos">Buscar contatos...</string>
+    <string name="adicionar_contato">Adicionar Contato</string>
+    <string name="ligar">Ligar</string>
+    <string name="enviar_email">Enviar E-mail</string>
+    <string name="editar">Editar</string>
+    <string name="favorito">Favorito</string>
+    <string name="nome">Nome</string>
+    <string name="telefone">Telefone</string>
+    <string name="email">E-mail</string>
+    <string name="linkedin">LinkedIn</string>
+    <string name="endereco">Endereço</string>
+    <string name="salvar">Salvar</string>
+    <string name="editar_foto">Editar Foto</string>
+    <string name="atualizar">Atualizar</string>
+    <string name="adicionar_foto">Adicionar Foto</string>
+    <string name="foto_do_contato">Foto do Contato</string>
+    <!-- Exemplos -->
+    <string name="nome_contato_exemplo">Exemplo de Nome</string>
+    <string name="telefone_contato_exemplo">(62) 99999-9999</string>
+    <string name="email_contato_exemplo">exemplo@dominio.com</string>
+    <string name="linkedin_contato_exemplo">linkedin.com/in/exemplo</string>
+    <string name="endereco_contato_exemplo">Rua Exemplo, 123</string>
 </resources>
