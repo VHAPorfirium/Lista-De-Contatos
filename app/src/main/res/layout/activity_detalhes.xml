@@ -32,13 +32,15 @@
             android:text="@string/nome_contato_exemplo"
             android:layout_marginTop="12dp" />
 
-        <!-- Indicação de favorito -->
+        <!-- Indicação de favorito (apenas visual, sem permitir clique) -->
         <CheckBox
             android:id="@+id/chkFavorito"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/favorito"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="8dp"
+            android:clickable="false"
+            android:focusable="false" />
 
         <!-- Telefone -->
         <TextView

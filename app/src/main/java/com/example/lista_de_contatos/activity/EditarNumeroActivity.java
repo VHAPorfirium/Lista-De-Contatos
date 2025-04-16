@@ -1,5 +1,7 @@
 package com.example.lista_de_contatos.activity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -15,12 +17,14 @@ import com.example.lista_de_contatos.models.Contato;
 
 public class EditarNumeroActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_PICK_IMAGE = 1;
     private ImageView imgFotoContatoEditar;
     private Button btnEditarFoto, btnAtualizarContato;
     private EditText edtNomeEditar, edtTelefoneEditar, edtEmailEditar, edtLinkedinEditar, edtEnderecoEditar;
     private CheckBox chkFavoritoEditar;
     private Contato contato;
     private ContatoDAO contatoDAO;
+    private String fotoUriString = ""; // Armazena o URI da foto selecionada
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +43,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
         chkFavoritoEditar = findViewById(R.id.chkFavoritoEditar);
         btnAtualizarContato = findViewById(R.id.btnAtualizarContato);
 
+        // Recupera o contato passado pela Intent
         contato = (Contato) getIntent().getSerializableExtra("EXTRA_CONTATO");
         if (contato != null) {
             loadContatoData();
@@ -47,7 +52,10 @@ public class EditarNumeroActivity extends AppCompatActivity {
         btnEditarFoto.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                // Implementar seleção de foto se necessário.
+                // Abre a galeria para selecionar uma nova foto
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
             }
         });
 
@@ -60,11 +68,27 @@ public class EditarNumeroActivity extends AppCompatActivity {
                 contato.setLinkedin(edtLinkedinEditar.getText().toString().trim());
                 contato.setEndereco(edtEnderecoEditar.getText().toString().trim());
                 contato.setContatoFavorito(chkFavoritoEditar.isChecked());
-
+                if (!fotoUriString.isEmpty()){
+                    contato.setFoto(fotoUriString);
+                }
                 contatoDAO.atualizarContato(contato);
+                // Após a atualização, redireciona para a MainActivity
+                Intent intent = new Intent(EditarNumeroActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri imageUri = data.getData();
+            fotoUriString = imageUri.toString();
+            imgFotoContatoEditar.setImageURI(imageUri);
+        }
     }
 
     private void loadContatoData() {
@@ -74,7 +98,12 @@ public class EditarNumeroActivity extends AppCompatActivity {
         edtLinkedinEditar.setText(contato.getLinkedin());
         edtEnderecoEditar.setText(contato.getEndereco());
         chkFavoritoEditar.setChecked(contato.isContatoFavorito());
-        imgFotoContatoEditar.setImageResource(R.drawable.ic_contact_placeholder);
+        fotoUriString = contato.getFoto();
+        if (fotoUriString != null && !fotoUriString.isEmpty()){
+            imgFotoContatoEditar.setImageURI(Uri.parse(fotoUriString));
+        } else {
+            imgFotoContatoEditar.setImageResource(R.drawable.ic_contact_placeholder);
+        }
     }
 
     @Override
