@@ -1,12 +1,11 @@
 package com.example.lista_de_contatos.activity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.widget.Toast;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,19 +17,18 @@ import com.example.lista_de_contatos.R;
 import com.example.lista_de_contatos.adapters.ContatoAdapter;
 import com.example.lista_de_contatos.db.ContatoDAO;
 import com.example.lista_de_contatos.models.Contato;
+import com.example.lista_de_contatos.sensors.ProximitySensorManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements ProximitySensorManager.OnProximityListener {
 
     private RecyclerView recyclerView;
     private ContatoAdapter contatoAdapter;
     private SearchView searchView;
     private ContatoDAO contatoDAO;
-
-    // Sensor
-    private SensorManager sensorManager;
-    private Sensor proximitySensor;
+    private ProximitySensorManager proximityManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,21 +37,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         contatoDAO = new ContatoDAO(this);
 
         recyclerView = findViewById(R.id.recyclerViewContatos);
-        searchView = findViewById(R.id.search_view_contatos);
+        searchView  = findViewById(R.id.search_view_contatos);
 
         // Carrega todos os contatos do banco de dados
         List<Contato> contatosList = contatoDAO.getAllContatos();
-        // Se estiver vazia, não insere dummy – deixa a lista vazia para que o usuário adicione novos contatos.
         contatoAdapter = new ContatoAdapter(contatosList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(contatoAdapter);
 
-        // Configura a filtragem através do SearchView
+        // Filtragem pelo SearchView
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
+            public boolean onQueryTextSubmit(String query) { return false; }
             @Override
             public boolean onQueryTextChange(String newText) {
                 contatoAdapter.getFilter().filter(newText);
@@ -61,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Ao clicar em um item da lista, abre a tela de detalhes do contato
+        // Clique em item abre DetalhesActivity
         contatoAdapter.setOnItemClickListener(new ContatoAdapter.OnItemClickListener(){
             @Override
             public void onItemClick(Contato contato) {
@@ -71,67 +66,78 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Botão flutuante para adicionar um novo contato
+        // FAB para adicionar novo contato
         findViewById(R.id.fabAddContato).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, AdicionarNumeroActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(MainActivity.this, AdicionarNumeroActivity.class));
             }
         });
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        if (sensorManager != null) {
-            proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        }
+        // Gerenciador do sensor de proximidade
+        proximityManager = new ProximitySensorManager(this, this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (proximitySensor != null) {
-            sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-        // Atualiza a lista de contatos
-        List<Contato> updatedList = contatoDAO.getAllContatos();
-        contatoAdapter.updateList(updatedList);
+        proximityManager.register();
+        // Atualiza lista
+        contatoAdapter.updateList(contatoDAO.getAllContatos());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        sensorManager.unregisterListener(this);
+        proximityManager.unregister();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (contatoDAO != null) {
-            contatoDAO.close();
-        }
+        if (contatoDAO != null) contatoDAO.close();
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            if (event.values[0] < proximitySensor.getMaximumRange()) {
-                List<Contato> contatos = contatoDAO.getAllContatos();
-                Contato favorito = null;
-                for (Contato c : contatos) {
-                    if (c.isContatoFavorito()) {
-                        favorito = c;
-                        break;
-                    }
-                }
-                if (favorito != null) {
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse("tel:" + favorito.getTelefone()));
-                    startActivity(intent);
-                }
+    public void onObjectNear() {
+        // Busca todos os favoritos
+        List<Contato> todos = contatoDAO.getAllContatos();
+        final List<Contato> favoritos = new ArrayList<>();
+        for (Contato c : todos) {
+            if (c.isContatoFavorito()) {
+                favoritos.add(c);
             }
         }
-    }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+        if (favoritos.isEmpty()) {
+            Toast.makeText(this, "Nenhum favorito definido", Toast.LENGTH_SHORT).show();
+        }
+        else if (favoritos.size() == 1) {
+            // Apenas um favorito: liga direto
+            Contato unico = favoritos.get(0);
+            Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + unico.getTelefone()));
+            startActivity(intent);
+        }
+        else {
+            // Vários favoritos: mostra diálogo para escolha
+            String[] nomes = new String[favoritos.size()];
+            for (int i = 0; i < favoritos.size(); i++) {
+                nomes[i] = favoritos.get(i).getNome();
+            }
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Escolha um favorito")
+                    .setItems(nomes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Contato escolhido = favoritos.get(which);
+                            Intent intent = new Intent(Intent.ACTION_DIAL,
+                                    Uri.parse("tel:" + escolhido.getTelefone()));
+                            startActivity(intent);
+                        }
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+        }
+    }
 }
