@@ -75,13 +75,13 @@
             android:layout_marginTop="8dp"
             android:text="@string/endereco_contato_exemplo" />
 
-        <!-- Seção de botões de ação -->
+        <!-- Seção de botões de ação na primeira linha -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:layout_marginTop="16dp">
 
             <Button
                 android:id="@+id/btnLigar"
@@ -104,5 +104,12 @@
                 android:text="@string/editar" />
         </LinearLayout>
 
+        <!-- Novo botão para excluir o contato, em uma linha separada -->
+        <Button
+            android:id="@+id/btnExcluirContato"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Excluir" />
     </LinearLayout>
 </ScrollView>

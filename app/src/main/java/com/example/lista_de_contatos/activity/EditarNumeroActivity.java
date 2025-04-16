@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lista_de_contatos.R;
+import com.example.lista_de_contatos.db.ContatoDAO;
 import com.example.lista_de_contatos.models.Contato;
 
 public class EditarNumeroActivity extends AppCompatActivity {
@@ -19,13 +20,15 @@ public class EditarNumeroActivity extends AppCompatActivity {
     private EditText edtNomeEditar, edtTelefoneEditar, edtEmailEditar, edtLinkedinEditar, edtEnderecoEditar;
     private CheckBox chkFavoritoEditar;
     private Contato contato;
+    private ContatoDAO contatoDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editar_numero);
 
-        // Inicializa as views
+        contatoDAO = new ContatoDAO(this);
+
         imgFotoContatoEditar = findViewById(R.id.imgFotoContatoEditar);
         btnEditarFoto = findViewById(R.id.btnEditarFoto);
         edtNomeEditar = findViewById(R.id.edtNomeEditar);
@@ -36,24 +39,21 @@ public class EditarNumeroActivity extends AppCompatActivity {
         chkFavoritoEditar = findViewById(R.id.chkFavoritoEditar);
         btnAtualizarContato = findViewById(R.id.btnAtualizarContato);
 
-        // Recupera o contato a ser editado via Intent
         contato = (Contato) getIntent().getSerializableExtra("EXTRA_CONTATO");
         if (contato != null) {
             loadContatoData();
         }
 
-        // Lógica para editar a foto (por exemplo, abrir a galeria)
-        btnEditarFoto.setOnClickListener(new View.OnClickListener() {
+        btnEditarFoto.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-                // Implemente a ação para selecionar e atualizar a foto
+            public void onClick(View v){
+                // Implementar seleção de foto se necessário.
             }
         });
 
-        // Ao atualizar, os dados já são alterados no objeto, que foi passado por referência
-        btnAtualizarContato.setOnClickListener(new View.OnClickListener() {
+        btnAtualizarContato.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
+            public void onClick(View v){
                 contato.setNome(edtNomeEditar.getText().toString().trim());
                 contato.setTelefone(edtTelefoneEditar.getText().toString().trim());
                 contato.setEmail(edtEmailEditar.getText().toString().trim());
@@ -61,17 +61,12 @@ public class EditarNumeroActivity extends AppCompatActivity {
                 contato.setEndereco(edtEnderecoEditar.getText().toString().trim());
                 contato.setContatoFavorito(chkFavoritoEditar.isChecked());
 
-                // Se o objeto foi passado por referência, as alterações já refletem no repositório.
-                // Caso contrário, você precisará atualizar na fonte de dados.
-
+                contatoDAO.atualizarContato(contato);
                 finish();
             }
         });
     }
 
-    /**
-     * Carrega os dados do contato nos campos para edição.
-     */
     private void loadContatoData() {
         edtNomeEditar.setText(contato.getNome());
         edtTelefoneEditar.setText(contato.getTelefone());
@@ -79,11 +74,14 @@ public class EditarNumeroActivity extends AppCompatActivity {
         edtLinkedinEditar.setText(contato.getLinkedin());
         edtEnderecoEditar.setText(contato.getEndereco());
         chkFavoritoEditar.setChecked(contato.isContatoFavorito());
+        imgFotoContatoEditar.setImageResource(R.drawable.ic_contact_placeholder);
+    }
 
-        if (contato.getFoto() != null && !contato.getFoto().isEmpty()) {
-            // Carrega a foto usando uma biblioteca (ex: Glide)
-        } else {
-            imgFotoContatoEditar.setImageResource(R.drawable.ic_contact_placeholder);
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (contatoDAO != null) {
+            contatoDAO.close();
         }
     }
 }

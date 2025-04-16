@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lista_de_contatos.R;
-import com.example.lista_de_contatos.data.ContatoRepository;
+import com.example.lista_de_contatos.db.ContatoDAO;
 import com.example.lista_de_contatos.models.Contato;
 
 public class AdicionarNumeroActivity extends AppCompatActivity {
@@ -19,13 +19,15 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
     private Button btnAdicionarFoto, btnSalvarContato;
     private EditText edtNome, edtTelefone, edtEmail, edtLinkedin, edtEndereco;
     private CheckBox chkNovoFavorito;
+    private ContatoDAO contatoDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_adicionar_numero);
 
-        // Inicializa as views
+        contatoDAO = new ContatoDAO(this);
+
         imgFotoNovoContato = findViewById(R.id.imgFotoNovoContato);
         btnAdicionarFoto = findViewById(R.id.btnAdicionarFoto);
         edtNome = findViewById(R.id.edtNome);
@@ -36,19 +38,16 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
         chkNovoFavorito = findViewById(R.id.chkNovoFavorito);
         btnSalvarContato = findViewById(R.id.btnSalvarContato);
 
-        // Lógica para adicionar foto – por exemplo, abrir a galeria (a implementar)
-        btnAdicionarFoto.setOnClickListener(new View.OnClickListener() {
+        btnAdicionarFoto.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-                // Ação para selecionar uma foto
+            public void onClick(View v){
+                // Implementar seleção de foto se necessário.
             }
         });
 
-        // Ao salvar, coleta os dados e adiciona o contato no repositório
-        btnSalvarContato.setOnClickListener(new View.OnClickListener() {
+        btnSalvarContato.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-
+            public void onClick(View v){
                 String nome = edtNome.getText().toString().trim();
                 String telefone = edtTelefone.getText().toString().trim();
                 String email = edtEmail.getText().toString().trim();
@@ -57,13 +56,18 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
                 boolean favorito = chkNovoFavorito.isChecked();
 
                 Contato novoContato = new Contato(nome, telefone, endereco, email, linkedin, "", favorito);
-
-                // Adiciona o contato no repositório
-                ContatoRepository.getInstance().adicionarContato(novoContato);
-
-                // Finaliza a Activity e retorna para a MainActivity
+                // Inserir o contato (nota: se o email for "meuemail@exemplo.com", ele será interpretado como owner)
+                contatoDAO.inserirContato(novoContato);
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (contatoDAO != null){
+            contatoDAO.close();
+        }
     }
 }

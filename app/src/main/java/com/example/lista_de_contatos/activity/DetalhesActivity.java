@@ -1,17 +1,18 @@
 package com.example.lista_de_contatos.activity;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lista_de_contatos.R;
+import com.example.lista_de_contatos.db.ContatoDAO;
 import com.example.lista_de_contatos.models.Contato;
 
 public class DetalhesActivity extends AppCompatActivity {
@@ -19,15 +20,17 @@ public class DetalhesActivity extends AppCompatActivity {
     private ImageView imgFotoContato;
     private TextView txtNomeContato, txtTelefoneContato, txtEmailContato, txtLinkedinContato, txtEnderecoContato;
     private CheckBox chkFavorito;
-    private Button btnLigar, btnEnviarEmail, btnEditarContato;
+    private Button btnLigar, btnEnviarEmail, btnEditarContato, btnExcluirContato;
     private Contato contato;
+    private ContatoDAO contatoDAO;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalhes);
 
-        // Buscar as views
+        contatoDAO = new ContatoDAO(this);
+
         imgFotoContato = findViewById(R.id.imgFotoContato);
         txtNomeContato = findViewById(R.id.txtNomeContato);
         txtTelefoneContato = findViewById(R.id.txtTelefoneContato);
@@ -38,65 +41,80 @@ public class DetalhesActivity extends AppCompatActivity {
         btnLigar = findViewById(R.id.btnLigar);
         btnEnviarEmail = findViewById(R.id.btnEnviarEmail);
         btnEditarContato = findViewById(R.id.btnEditarContato);
+        btnExcluirContato = findViewById(R.id.btnExcluirContato);
 
-        // Recupera o contato passado via Intent
         contato = (Contato) getIntent().getSerializableExtra("EXTRA_CONTATO");
         if (contato != null) {
             loadContatoData();
         }
 
-        // Ação para realizar ligação
-        btnLigar.setOnClickListener(new View.OnClickListener() {
+        btnLigar.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
+            public void onClick(View v){
                 if (contato != null) {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse("tel:" + contato.getTelefone()));
+                    intent.setData(android.net.Uri.parse("tel:" + contato.getTelefone()));
                     startActivity(intent);
                 }
             }
         });
 
-        // Ação para enviar e-mail
-        btnEnviarEmail.setOnClickListener(new View.OnClickListener() {
+        btnEnviarEmail.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
+            public void onClick(View v){
                 if (contato != null) {
                     Intent intent = new Intent(Intent.ACTION_SENDTO);
-                    intent.setData(Uri.parse("mailto:" + contato.getEmail()));
+                    intent.setData(android.net.Uri.parse("mailto:" + contato.getEmail()));
                     startActivity(intent);
                 }
             }
         });
 
-        // Ação para editar o contato
-        btnEditarContato.setOnClickListener(new View.OnClickListener() {
+        btnEditarContato.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
+            public void onClick(View v){
                 Intent intent = new Intent(DetalhesActivity.this, EditarNumeroActivity.class);
                 intent.putExtra("EXTRA_CONTATO", contato);
                 startActivity(intent);
             }
         });
+
+        btnExcluirContato.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if (contato != null) {
+                    int linhasAfetadas = contatoDAO.deletarContato(contato.getId());
+                    if (linhasAfetadas > 0) {
+                        Toast.makeText(DetalhesActivity.this, "Contato excluído com sucesso", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(DetalhesActivity.this, "Erro ao excluir contato", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
     }
 
-    /**
-     * Carrega os dados do contato nas views.
-     */
-    private void loadContatoData() {
+    private void loadContatoData(){
         txtNomeContato.setText(contato.getNome());
         txtTelefoneContato.setText(contato.getTelefone());
         txtEmailContato.setText(contato.getEmail());
         txtLinkedinContato.setText(contato.getLinkedin());
         txtEnderecoContato.setText(contato.getEndereco());
         chkFavorito.setChecked(contato.isContatoFavorito());
-
-        // Se houver foto, pode usar uma biblioteca (Glide, Picasso) para carregar, senão usa placeholder
-        if (contato.getFoto() != null && !contato.getFoto().isEmpty()) {
-            // Exemplo:
+        if (contato.getFoto() != null && !contato.getFoto().isEmpty()){
+            // Exemplo com Glide:
             // Glide.with(this).load(contato.getFoto()).into(imgFotoContato);
         } else {
             imgFotoContato.setImageResource(R.drawable.ic_contact_placeholder);
+        }
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (contatoDAO != null) {
+            contatoDAO.close();
         }
     }
 }

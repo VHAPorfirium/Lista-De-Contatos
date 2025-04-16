@@ -8,7 +8,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -17,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lista_de_contatos.R;
 import com.example.lista_de_contatos.adapters.ContatoAdapter;
-import com.example.lista_de_contatos.data.ContatoRepository;
+import com.example.lista_de_contatos.db.ContatoDAO;
 import com.example.lista_de_contatos.models.Contato;
 
 import java.util.List;
@@ -27,9 +26,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private RecyclerView recyclerView;
     private ContatoAdapter contatoAdapter;
     private SearchView searchView;
-    private LinearLayout layoutContatoDono; // Seção para o contato do dono
+    private ContatoDAO contatoDAO;
 
-    // Variáveis para o sensor de proximidade
+    // Sensor
     private SensorManager sensorManager;
     private Sensor proximitySensor;
 
@@ -37,55 +36,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        contatoDAO = new ContatoDAO(this);
 
-        // Inicializa as views
         recyclerView = findViewById(R.id.recyclerViewContatos);
         searchView = findViewById(R.id.search_view_contatos);
-        layoutContatoDono = findViewById(R.id.layout_contato_dono);
 
-        // Configura o clique para a seção do contato do dono
-        layoutContatoDono.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Crie o objeto Contato com suas informações (substitua pelos seus dados reais)
-                Contato contatoDono = new Contato(
-                        "Meu Nome",
-                        "(99) 99999-9999",
-                        "Meu Endereço, nº 123",
-                        "meuemail@exemplo.com",
-                        "linkedin.com/in/meuperfil",
-                        "",       // Se você tiver uma foto ou caminho, coloque aqui; ou deixe vazio
-                        false     // Esse campo não interfere na exibição deste contato
-                );
-
-                // Abre a tela de detalhes passando as informações do dono
-                Intent intent = new Intent(MainActivity.this, DetalhesActivity.class);
-                intent.putExtra("EXTRA_CONTATO", contatoDono);
-                startActivity(intent);
-            }
-        });
-
-        // Carrega a lista de contatos do repositório
-        List<Contato> contatosList = ContatoRepository.getInstance().getContatos();
-        if(contatosList.isEmpty()){
-            // Se a lista estiver vazia, adicione alguns contatos dummy para teste
-            contatosList.add(new Contato("Alice", "(11) 11111-1111", "Rua A, 123", "alice@mail.com", "linkedin.com/in/alice", "", true));
-            contatosList.add(new Contato("Bob", "(22) 22222-2222", "Rua B, 456", "bob@mail.com", "linkedin.com/in/bob", "", false));
-        }
-
-        // Configura o adapter – os contatos já serão ordenados em ordem alfabética no adapter
+        // Carrega todos os contatos do banco de dados
+        List<Contato> contatosList = contatoDAO.getAllContatos();
+        // Se estiver vazia, não insere dummy – deixa a lista vazia para que o usuário adicione novos contatos.
         contatoAdapter = new ContatoAdapter(contatosList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(contatoAdapter);
 
         // Configura a filtragem através do SearchView
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // Opcional: tratar submit (fechar teclado, por exemplo)
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 contatoAdapter.getFilter().filter(newText);
@@ -93,8 +61,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Quando um item da lista é clicado, abre a tela de detalhes com os dados do contato
-        contatoAdapter.setOnItemClickListener(new ContatoAdapter.OnItemClickListener() {
+        // Ao clicar em um item da lista, abre a tela de detalhes do contato
+        contatoAdapter.setOnItemClickListener(new ContatoAdapter.OnItemClickListener(){
             @Override
             public void onItemClick(Contato contato) {
                 Intent intent = new Intent(MainActivity.this, DetalhesActivity.class);
@@ -103,8 +71,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Configura o botão flutuante para adicionar um novo contato
-        findViewById(R.id.fabAddContato).setOnClickListener(new View.OnClickListener() {
+        // Botão flutuante para adicionar um novo contato
+        findViewById(R.id.fabAddContato).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, AdicionarNumeroActivity.class);
@@ -112,24 +80,46 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Configura o sensor de proximidade
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensorManager != null) {
             proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         }
     }
 
-    // (Métodos onSensorChanged, onAccuracyChanged, onResume e onPause permanecem inalterados)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (proximitySensor != null) {
+            sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+        // Atualiza a lista de contatos
+        List<Contato> updatedList = contatoDAO.getAllContatos();
+        contatoAdapter.updateList(updatedList);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (contatoDAO != null) {
+            contatoDAO.close();
+        }
+    }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
             if (event.values[0] < proximitySensor.getMaximumRange()) {
+                List<Contato> contatos = contatoDAO.getAllContatos();
                 Contato favorito = null;
-                // Percorre a lista para encontrar um contato favorito
-                for (Contato contato : ContatoRepository.getInstance().getContatos()) {
-                    if (contato.isContatoFavorito()) {
-                        favorito = contato;
+                for (Contato c : contatos) {
+                    if (c.isContatoFavorito()) {
+                        favorito = c;
                         break;
                     }
                 }
@@ -143,21 +133,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Não utilizado neste exemplo
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (proximitySensor != null) {
-            sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        sensorManager.unregisterListener(this);
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 }

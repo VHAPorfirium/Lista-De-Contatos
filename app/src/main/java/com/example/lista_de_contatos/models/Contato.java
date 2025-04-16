@@ -2,24 +2,19 @@ package com.example.lista_de_contatos.models;
 
 import java.io.Serializable;
 
-// Classe que representa um Contato
 public class Contato implements Serializable {
-
-    // Atributos da classe
+    // Campo para o ID gerado pelo banco
+    private long id;
     private String nome;
     private String telefone;
     private String endereco;
     private String email;
     private String linkedin;
-    private String foto; // Pode representar o caminho da foto ou URL
+    private String foto;
     private boolean contatoFavorito;
 
+    public Contato() { }
 
-    //Construtor vazio para instâncias sem inicialização imediata.
-    public Contato() {
-    }
-
-    //Construtor completo.
     public Contato(String nome, String telefone, String endereco, String email, String linkedin, String foto, boolean contatoFavorito) {
         this.nome = nome;
         this.telefone = telefone;
@@ -31,11 +26,16 @@ public class Contato implements Serializable {
     }
 
     // Getters e Setters
+    public long getId() {
+        return id;
+    }
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getNome() {
         return nome;
     }
-
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -43,7 +43,6 @@ public class Contato implements Serializable {
     public String getTelefone() {
         return telefone;
     }
-
     public void setTelefone(String telefone) {
         this.telefone = telefone;
     }
@@ -51,7 +50,6 @@ public class Contato implements Serializable {
     public String getEndereco() {
         return endereco;
     }
-
     public void setEndereco(String endereco) {
         this.endereco = endereco;
     }
@@ -59,7 +57,6 @@ public class Contato implements Serializable {
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -67,7 +64,6 @@ public class Contato implements Serializable {
     public String getLinkedin() {
         return linkedin;
     }
-
     public void setLinkedin(String linkedin) {
         this.linkedin = linkedin;
     }
@@ -75,7 +71,6 @@ public class Contato implements Serializable {
     public String getFoto() {
         return foto;
     }
-
     public void setFoto(String foto) {
         this.foto = foto;
     }
@@ -83,17 +78,15 @@ public class Contato implements Serializable {
     public boolean isContatoFavorito() {
         return contatoFavorito;
     }
-
     public void setContatoFavorito(boolean contatoFavorito) {
         this.contatoFavorito = contatoFavorito;
     }
 
-
-    //Retorna uma representação em String do objeto Contato.
     @Override
     public String toString() {
         return "Contato{" +
-                "nome='" + nome + '\'' +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
                 ", telefone='" + telefone + '\'' +
                 ", endereco='" + endereco + '\'' +
                 ", email='" + email + '\'' +
