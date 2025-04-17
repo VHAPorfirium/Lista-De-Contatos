@@ -39,5 +39,3 @@ src/
     └── values/                      # strings.xml, colors.xml, styles.xml, dimens.xml
 ```
 ---
-
-<div align="center">Feito com ❤️ para gerenciar seus contatos de forma rápida e prática!</div>
