@@ -26,6 +26,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
     private ContatoDAO contatoDAO;
     private String fotoUriString = ""; // Armazena o URI da foto selecionada
 
+    // Inicializa a UI, carrega dados e configura botões
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +44,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
         chkFavoritoEditar = findViewById(R.id.chkFavoritoEditar);
         btnAtualizarContato = findViewById(R.id.btnAtualizarContato);
 
-        // Recupera o contato passado pela Intent
+        // Recupera o contato e preenche os campos
         contato = (Contato) getIntent().getSerializableExtra("EXTRA_CONTATO");
         if (contato != null) {
             loadContatoData();
@@ -52,7 +53,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
         btnEditarFoto.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                // Abre a galeria para selecionar uma nova foto
+                // Abre galeria para selecionar imagem
                 Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 startActivityForResult(intent, REQUEST_CODE_PICK_IMAGE);
@@ -62,6 +63,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
         btnAtualizarContato.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                // Atualiza contato e retorna para MainActivity
                 contato.setNome(edtNomeEditar.getText().toString().trim());
                 contato.setTelefone(edtTelefoneEditar.getText().toString().trim());
                 contato.setEmail(edtEmailEditar.getText().toString().trim());
@@ -72,7 +74,6 @@ public class EditarNumeroActivity extends AppCompatActivity {
                     contato.setFoto(fotoUriString);
                 }
                 contatoDAO.atualizarContato(contato);
-                // Após a atualização, redireciona para a MainActivity
                 Intent intent = new Intent(EditarNumeroActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
@@ -81,16 +82,21 @@ public class EditarNumeroActivity extends AppCompatActivity {
         });
     }
 
+    // Trata o resultado da galeria e exibe a imagem selecionada
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == REQUEST_CODE_PICK_IMAGE
+                && resultCode == RESULT_OK
+                && data != null
+                && data.getData() != null) {
             Uri imageUri = data.getData();
             fotoUriString = imageUri.toString();
             imgFotoContatoEditar.setImageURI(imageUri);
         }
     }
 
+    // Preenche os campos de edição com os dados do contato
     private void loadContatoData() {
         edtNomeEditar.setText(contato.getNome());
         edtTelefoneEditar.setText(contato.getTelefone());
@@ -106,6 +112,7 @@ public class EditarNumeroActivity extends AppCompatActivity {
         }
     }
 
+    // Fecha o DAO ao destruir a Activity
     @Override
     protected void onDestroy(){
         super.onDestroy();

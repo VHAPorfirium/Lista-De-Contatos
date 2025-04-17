@@ -24,6 +24,7 @@ public class DetalhesActivity extends AppCompatActivity {
     private Contato contato;
     private ContatoDAO contatoDAO;
 
+    // Called when the Activity is created: binds views and sets up button actions
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,17 +32,17 @@ public class DetalhesActivity extends AppCompatActivity {
 
         contatoDAO = new ContatoDAO(this);
 
-        imgFotoContato = findViewById(R.id.imgFotoContato);
-        txtNomeContato = findViewById(R.id.txtNomeContato);
-        txtTelefoneContato = findViewById(R.id.txtTelefoneContato);
-        txtEmailContato = findViewById(R.id.txtEmailContato);
-        txtLinkedinContato = findViewById(R.id.txtLinkedinContato);
-        txtEnderecoContato = findViewById(R.id.txtEnderecoContato);
-        chkFavorito = findViewById(R.id.chkFavorito);
-        btnLigar = findViewById(R.id.btnLigar);
-        btnEnviarEmail = findViewById(R.id.btnEnviarEmail);
-        btnEditarContato = findViewById(R.id.btnEditarContato);
-        btnExcluirContato = findViewById(R.id.btnExcluirContato);
+        imgFotoContato       = findViewById(R.id.imgFotoContato);
+        txtNomeContato       = findViewById(R.id.txtNomeContato);
+        txtTelefoneContato   = findViewById(R.id.txtTelefoneContato);
+        txtEmailContato      = findViewById(R.id.txtEmailContato);
+        txtLinkedinContato   = findViewById(R.id.txtLinkedinContato);
+        txtEnderecoContato   = findViewById(R.id.txtEnderecoContato);
+        chkFavorito          = findViewById(R.id.chkFavorito);
+        btnLigar             = findViewById(R.id.btnLigar);
+        btnEnviarEmail       = findViewById(R.id.btnEnviarEmail);
+        btnEditarContato     = findViewById(R.id.btnEditarContato);
+        btnExcluirContato    = findViewById(R.id.btnExcluirContato);
 
         contato = (Contato) getIntent().getSerializableExtra("EXTRA_CONTATO");
         if (contato != null) {
@@ -95,6 +96,7 @@ public class DetalhesActivity extends AppCompatActivity {
         });
     }
 
+    // Populates all UI elements with the contact's data
     private void loadContatoData(){
         txtNomeContato.setText(contato.getNome());
         txtTelefoneContato.setText(contato.getTelefone());
@@ -110,6 +112,7 @@ public class DetalhesActivity extends AppCompatActivity {
         }
     }
 
+    // Releases the DAO resource when the Activity is destroyed
     @Override
     protected void onDestroy(){
         super.onDestroy();

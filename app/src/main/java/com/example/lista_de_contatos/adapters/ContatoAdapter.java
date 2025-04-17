@@ -23,16 +23,16 @@ public class ContatoAdapter extends RecyclerView.Adapter<ContatoAdapter.ContatoV
 
     private List<Contato> fullList;       // Lista original
     private List<Contato> filteredList;   // Lista filtrada ou em exibição
-    private OnItemClickListener listener; // Interface de callback para cliques
+    private OnItemClickListener listener; // Callback para cliques
 
+    // Construtor que ordena a lista ao criar o adapter
     public ContatoAdapter(List<Contato> contatos) {
-        // Ordena a lista por nome antes de atribuir
         this.fullList = new ArrayList<>(contatos);
         sortAlphabetically(this.fullList);
-
         this.filteredList = new ArrayList<>(fullList);
     }
 
+    // Infla o layout do item e retorna um ViewHolder
     @NonNull
     @Override
     public ContatoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -41,20 +41,19 @@ public class ContatoAdapter extends RecyclerView.Adapter<ContatoAdapter.ContatoV
         return new ContatoViewHolder(view);
     }
 
+    // Vincula os dados do contato à view na posição indicada
     @Override
     public void onBindViewHolder(@NonNull ContatoViewHolder holder, int position) {
-        Contato contato = filteredList.get(position);
-        holder.bind(contato);
+        holder.bind(filteredList.get(position));
     }
 
+    // Retorna quantos itens estão na lista filtrada
     @Override
     public int getItemCount() {
         return filteredList.size();
     }
 
-    /**
-     * Ordena a lista de contatos em ordem alfabética pelo nome.
-     */
+    // Ordena a lista de contatos em ordem alfabética pelo nome
     private void sortAlphabetically(List<Contato> contatos) {
         Collections.sort(contatos, new Comparator<Contato>() {
             @Override
@@ -64,117 +63,91 @@ public class ContatoAdapter extends RecyclerView.Adapter<ContatoAdapter.ContatoV
         });
     }
 
-    /**
-     * Atualiza a lista de contatos no adapter (por exemplo, quando se adiciona ou edita um contato).
-     */
+    // Atualiza todo o conteúdo do adapter com uma nova lista
     public void updateList(List<Contato> novaLista) {
         this.fullList = new ArrayList<>(novaLista);
         sortAlphabetically(this.fullList);
-
         this.filteredList.clear();
         this.filteredList.addAll(fullList);
         notifyDataSetChanged();
     }
 
-    /**
-     * Implementação de busca/filtragem de nomes na lista.
-     */
+    // Retorna o filtro usado para busca no nome do contato
     @Override
     public Filter getFilter() {
         return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 List<Contato> filtered = new ArrayList<>();
-
                 if (constraint == null || constraint.length() == 0) {
-                    // Se não há texto digitado, mostra todos
                     filtered.addAll(fullList);
                 } else {
-                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    String pattern = constraint.toString().toLowerCase().trim();
                     for (Contato c : fullList) {
-                        // Filtra pelo nome (pode adaptar para telefone, email, etc.)
-                        if (c.getNome().toLowerCase().contains(filterPattern)) {
+                        if (c.getNome().toLowerCase().contains(pattern)) {
                             filtered.add(c);
                         }
                     }
                 }
-
-                // Ordena o resultado filtrado
                 sortAlphabetically(filtered);
-
                 FilterResults results = new FilterResults();
                 results.values = filtered;
                 return results;
             }
-
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 filteredList.clear();
+                //noinspection unchecked
                 filteredList.addAll((List<Contato>) results.values);
                 notifyDataSetChanged();
             }
         };
     }
 
-    /**
-     * Interface de callback para cliques nos itens da lista.
-     */
-    public interface OnItemClickListener {
-        void onItemClick(Contato contato);
-    }
-
-    /**
-     * Configura o listener para cliques no item.
-     */
+    // Configura o listener que será chamado ao clicar em um item
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
 
-    /**
-     * ViewHolder interno para o item_contato.xml
-     */
+    // ViewHolder que gerencia as views de cada item de contato
     class ContatoViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFoto, imgFavorito;
         TextView txtNome, txtTelefone;
 
         ContatoViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgFoto = itemView.findViewById(R.id.imgFotoItemContato);
+            imgFoto     = itemView.findViewById(R.id.imgFotoItemContato);
             imgFavorito = itemView.findViewById(R.id.imgFavoritoItem);
-            txtNome = itemView.findViewById(R.id.txtNomeItem);
+            txtNome     = itemView.findViewById(R.id.txtNomeItem);
             txtTelefone = itemView.findViewById(R.id.txtTelefoneItem);
 
+            // Dispara callback quando o item for clicado
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (listener != null) {
-                        int position = getAdapterPosition();
-                        if (position != RecyclerView.NO_POSITION) {
-                            listener.onItemClick(filteredList.get(position));
-                        }
+                    int pos = getAdapterPosition();
+                    if (listener != null && pos != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(filteredList.get(pos));
                     }
                 }
             });
         }
 
+        // Preenche as views com os dados do contato
         void bind(Contato contato) {
             txtNome.setText(contato.getNome());
             txtTelefone.setText(contato.getTelefone());
-
-            // Exemplo simples para mostrar foto se houver
-            // Você pode usar Glide/Picasso para carregar imagens de URL
             if (contato.getFoto() != null && !contato.getFoto().isEmpty()) {
-                // Carrega a foto com biblioteca ou setImageURI...
+                // carregar foto via URI ou biblioteca
             } else {
                 imgFoto.setImageResource(R.drawable.ic_contact_placeholder);
             }
-
-            // Mostra ou esconde o ícone de favorito
-            if (contato.isContatoFavorito()) {
-                imgFavorito.setVisibility(View.VISIBLE);
-            } else {
-                imgFavorito.setVisibility(View.GONE);
-            }
+            imgFavorito.setVisibility(contato.isContatoFavorito() ? View.VISIBLE : View.GONE);
         }
+    }
+
+    // Interface para callback de clique em um contato
+    public interface OnItemClickListener {
+        void onItemClick(Contato contato);
     }
 }

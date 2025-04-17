@@ -10,10 +10,12 @@ public class ContatoDBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "contatos.db";
     private static final int DATABASE_VERSION = 1;
 
+    // Cria o helper com nome e versão do banco
     public ContatoDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    // Executado na primeira criação do banco, define a tabela de contatos
     @Override
     public void onCreate(SQLiteDatabase db) {
         String SQL_CREATE_CONTATOS_TABLE = "CREATE TABLE " + ContatoEntry.TABLE_NAME + " ("
@@ -29,9 +31,9 @@ public class ContatoDBHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_CONTATOS_TABLE);
     }
 
+    // Executado quando a versão do banco muda; descarta e recria a tabela
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Descartar a tabela antiga e recriar a nova para simplificar
         db.execSQL("DROP TABLE IF EXISTS " + ContatoEntry.TABLE_NAME);
         onCreate(db);
     }

@@ -25,6 +25,7 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
     private ContatoDAO contatoDAO;
     private String fotoUriString = ""; // Armazena o URI selecionado
 
+    // Inicia a Activity, vincula views e configura listeners para foto e salvar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,16 +34,16 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
         contatoDAO = new ContatoDAO(this);
 
         imgFotoNovoContato = findViewById(R.id.imgFotoNovoContato);
-        btnAdicionarFoto = findViewById(R.id.btnAdicionarFoto);
-        edtNome = findViewById(R.id.edtNome);
-        edtTelefone = findViewById(R.id.edtTelefone);
-        edtEmail = findViewById(R.id.edtEmail);
-        edtLinkedin = findViewById(R.id.edtLinkedin);
-        edtEndereco = findViewById(R.id.edtEndereco);
-        chkNovoFavorito = findViewById(R.id.chkNovoFavorito);
-        btnSalvarContato = findViewById(R.id.btnSalvarContato);
+        btnAdicionarFoto    = findViewById(R.id.btnAdicionarFoto);
+        edtNome             = findViewById(R.id.edtNome);
+        edtTelefone         = findViewById(R.id.edtTelefone);
+        edtEmail            = findViewById(R.id.edtEmail);
+        edtLinkedin         = findViewById(R.id.edtLinkedin);
+        edtEndereco         = findViewById(R.id.edtEndereco);
+        chkNovoFavorito     = findViewById(R.id.chkNovoFavorito);
+        btnSalvarContato    = findViewById(R.id.btnSalvarContato);
 
-        // Seleção de foto: abre a galeria
+        // Abre galeria para escolher imagem
         btnAdicionarFoto.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -52,17 +53,17 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
             }
         });
 
+        // Cria e insere novo contato no banco ao salvar
         btnSalvarContato.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                String nome = edtNome.getText().toString().trim();
+                String nome     = edtNome.getText().toString().trim();
                 String telefone = edtTelefone.getText().toString().trim();
-                String email = edtEmail.getText().toString().trim();
+                String email    = edtEmail.getText().toString().trim();
                 String linkedin = edtLinkedin.getText().toString().trim();
                 String endereco = edtEndereco.getText().toString().trim();
-                boolean favorito = chkNovoFavorito.isChecked();
+                boolean favorito= chkNovoFavorito.isChecked();
 
-                // Cria o contato com o URI da foto (pode ser vazio se não selecionado)
                 Contato novoContato = new Contato(nome, telefone, endereco, email, linkedin, fotoUriString, favorito);
                 contatoDAO.inserirContato(novoContato);
                 finish();
@@ -70,16 +71,21 @@ public class AdicionarNumeroActivity extends AppCompatActivity {
         });
     }
 
+    // Trata o resultado da Activity de seleção de imagem e mostra no ImageView
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_PICK_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
+        if (requestCode == REQUEST_CODE_PICK_IMAGE
+                && resultCode == RESULT_OK
+                && data != null
+                && data.getData() != null) {
             Uri imageUri = data.getData();
             fotoUriString = imageUri.toString();
             imgFotoNovoContato.setImageURI(imageUri);
         }
     }
 
+    // Fecha o DAO ao destruir a Activity para liberar recursos
     @Override
     protected void onDestroy(){
         super.onDestroy();

@@ -16,11 +16,13 @@ public class ContatoDAO {
     private SQLiteDatabase database;
     private ContatoDBHelper dbHelper;
 
+    // Inicializa o helper e abre o banco para escrita
     public ContatoDAO(Context context) {
         dbHelper = new ContatoDBHelper(context);
         database = dbHelper.getWritableDatabase();
     }
 
+    // Insere um novo contato no banco e atualiza seu ID
     public long inserirContato(Contato contato) {
         ContentValues values = new ContentValues();
         values.put(ContatoEntry.COLUMN_NOME, contato.getNome());
@@ -35,6 +37,7 @@ public class ContatoDAO {
         return id;
     }
 
+    // Atualiza os dados de um contato existente pelo seu ID
     public int atualizarContato(Contato contato) {
         ContentValues values = new ContentValues();
         values.put(ContatoEntry.COLUMN_NOME, contato.getNome());
@@ -49,15 +52,21 @@ public class ContatoDAO {
         return database.update(ContatoEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 
+    // Remove um contato do banco pelo seu ID
     public int deletarContato(long id) {
         String selection = ContatoEntry._ID + " = ?";
         String[] selectionArgs = { String.valueOf(id) };
         return database.delete(ContatoEntry.TABLE_NAME, selection, selectionArgs);
     }
 
+    // Recupera todos os contatos ordenados por nome
     public List<Contato> getAllContatos() {
         List<Contato> contatos = new ArrayList<>();
-        Cursor cursor = database.query(ContatoEntry.TABLE_NAME, null, null, null, null, null, ContatoEntry.COLUMN_NOME + " ASC");
+        Cursor cursor = database.query(
+                ContatoEntry.TABLE_NAME,
+                null, null, null, null, null,
+                ContatoEntry.COLUMN_NOME + " ASC"
+        );
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 Contato contato = new Contato();
@@ -68,65 +77,17 @@ public class ContatoDAO {
                 contato.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_EMAIL)));
                 contato.setLinkedin(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_LINKEDIN)));
                 contato.setFoto(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_FOTO)));
-                int fav = cursor.getInt(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_CONTATO_FAVORITO));
-                contato.setContatoFavorito(fav == 1);
+                contato.setContatoFavorito(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_CONTATO_FAVORITO)) == 1
+                );
                 contatos.add(contato);
             } while (cursor.moveToNext());
-        }
-        if (cursor != null)
             cursor.close();
+        }
         return contatos;
     }
 
-    // Retorna o contato do dono (identificado pelo email fixo "meuemail@exemplo.com")
-    public Contato getContatoDono() {
-        Contato contato = null;
-        String selection = ContatoEntry.COLUMN_EMAIL + " = ?";
-        String[] selectionArgs = { "meuemail@exemplo.com" };
-        Cursor cursor = database.query(ContatoEntry.TABLE_NAME, null, selection, selectionArgs, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            contato = new Contato();
-            contato.setId(cursor.getLong(cursor.getColumnIndexOrThrow(ContatoEntry._ID)));
-            contato.setNome(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_NOME)));
-            contato.setTelefone(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_TELEFONE)));
-            contato.setEndereco(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_ENDERECO)));
-            contato.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_EMAIL)));
-            contato.setLinkedin(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_LINKEDIN)));
-            contato.setFoto(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_FOTO)));
-            int fav = cursor.getInt(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_CONTATO_FAVORITO));
-            contato.setContatoFavorito(fav == 1);
-        }
-        if (cursor != null)
-            cursor.close();
-        return contato;
-    }
-
-    // Retorna todos os contatos exceto o contato do dono (email fixo)
-    public List<Contato> getAllContatosExcludingOwner() {
-        List<Contato> contatos = new ArrayList<>();
-        String selection = ContatoEntry.COLUMN_EMAIL + " <> ?";
-        String[] selectionArgs = { "meuemail@exemplo.com" };
-        Cursor cursor = database.query(ContatoEntry.TABLE_NAME, null, selection, selectionArgs, null, null, ContatoEntry.COLUMN_NOME + " ASC");
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                Contato contato = new Contato();
-                contato.setId(cursor.getLong(cursor.getColumnIndexOrThrow(ContatoEntry._ID)));
-                contato.setNome(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_NOME)));
-                contato.setTelefone(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_TELEFONE)));
-                contato.setEndereco(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_ENDERECO)));
-                contato.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_EMAIL)));
-                contato.setLinkedin(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_LINKEDIN)));
-                contato.setFoto(cursor.getString(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_FOTO)));
-                int fav = cursor.getInt(cursor.getColumnIndexOrThrow(ContatoEntry.COLUMN_CONTATO_FAVORITO));
-                contato.setContatoFavorito(fav == 1);
-                contatos.add(contato);
-            } while (cursor.moveToNext());
-        }
-        if (cursor != null)
-            cursor.close();
-        return contatos;
-    }
-
+    // Fecha o helper para liberar recursos
     public void close() {
         dbHelper.close();
     }

@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements ProximitySensorMa
     private ContatoDAO contatoDAO;
     private ProximitySensorManager proximityManager;
 
+    // Inicializa UI, busca contatos e configura sensor de proximidade
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,29 +79,31 @@ public class MainActivity extends AppCompatActivity implements ProximitySensorMa
         proximityManager = new ProximitySensorManager(this, this);
     }
 
+    // Re-registra sensor e atualiza lista de contatos ao voltar ao foco
     @Override
     protected void onResume() {
         super.onResume();
         proximityManager.register();
-        // Atualiza lista
         contatoAdapter.updateList(contatoDAO.getAllContatos());
     }
 
+    // Desregistra o sensor para economizar recursos
     @Override
     protected void onPause() {
         super.onPause();
         proximityManager.unregister();
     }
 
+    // Fecha o DAO ao destruir a Activity
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (contatoDAO != null) contatoDAO.close();
     }
 
+    // Dispara quando algo se aproxima do sensor: liga para favorito(s)
     @Override
     public void onObjectNear() {
-        // Busca todos os favoritos
         List<Contato> todos = contatoDAO.getAllContatos();
         final List<Contato> favoritos = new ArrayList<>();
         for (Contato c : todos) {
@@ -113,13 +116,11 @@ public class MainActivity extends AppCompatActivity implements ProximitySensorMa
             Toast.makeText(this, "Nenhum favorito definido", Toast.LENGTH_SHORT).show();
         }
         else if (favoritos.size() == 1) {
-            // Apenas um favorito: liga direto
             Contato unico = favoritos.get(0);
             Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + unico.getTelefone()));
             startActivity(intent);
         }
         else {
-            // Vários favoritos: mostra diálogo para escolha
             String[] nomes = new String[favoritos.size()];
             for (int i = 0; i < favoritos.size(); i++) {
                 nomes[i] = favoritos.get(i).getNome();
